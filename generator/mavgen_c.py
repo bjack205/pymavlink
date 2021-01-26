@@ -221,7 +221,7 @@ ${{arg_fields: * @param ${name} ${units} ${description}
 }}
  * @return length of the message in bytes (excluding serial stream start sign)
  */
-static inline uint16_t mavlink_msg_${name_lower}_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
+${usestatic}${useinline}uint16_t mavlink_msg_${name_lower}_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
                               ${{arg_fields: ${array_const}${type} ${array_prefix}${name},}})
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
@@ -254,7 +254,7 @@ ${{arg_fields: * @param ${name} ${units} ${description}
 }}
  * @return length of the message in bytes (excluding serial stream start sign)
  */
-static inline uint16_t mavlink_msg_${name_lower}_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
+${usestatic}${useinline}uint16_t mavlink_msg_${name_lower}_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
                                    ${{arg_fields:${array_const}${type} ${array_prefix}${name},}})
 {
@@ -286,7 +286,7 @@ ${{array_fields:    mav_array_memcpy(packet.${name}, ${name}, sizeof(${type})*${
  * @param msg The MAVLink message to compress the data into
  * @param ${name_lower} C-struct to read the message contents from
  */
-static inline uint16_t mavlink_msg_${name_lower}_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_${name_lower}_t* ${name_lower})
+${usestatic}${useinline}uint16_t mavlink_msg_${name_lower}_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_${name_lower}_t* ${name_lower})
 {
     return mavlink_msg_${name_lower}_pack(system_id, component_id, msg,${{arg_fields: ${name_lower}->${name},}});
 }
@@ -300,7 +300,7 @@ static inline uint16_t mavlink_msg_${name_lower}_encode(uint8_t system_id, uint8
  * @param msg The MAVLink message to compress the data into
  * @param ${name_lower} C-struct to read the message contents from
  */
-static inline uint16_t mavlink_msg_${name_lower}_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_${name_lower}_t* ${name_lower})
+${usestatic}${useinline}uint16_t mavlink_msg_${name_lower}_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_${name_lower}_t* ${name_lower})
 {
     return mavlink_msg_${name_lower}_pack_chan(system_id, component_id, chan, msg,${{arg_fields: ${name_lower}->${name},}});
 }
@@ -570,7 +570,7 @@ def generate_one(basename, xml):
     # work out the included headers
     xml.include_list = []
     for i in xml.include:
-        base = os.path.basename(i)[:-4]
+        base = i[:-4]
         xml.include_list.append(mav_include(base))
 
     # form message lengths array
@@ -680,6 +680,12 @@ def generate_one(basename, xml):
         else:
             m.MAVPACKED_START = ""
             m.MAVPACKED_END = ""
+        if xml.islib:
+            m.useinline = ""
+            m.usestatic = ""
+        else:
+            m.useinline = "inline "
+            m.usestatic = "static "
 
     # cope with uint8_t_mavlink_version
     for m in xml.message:
